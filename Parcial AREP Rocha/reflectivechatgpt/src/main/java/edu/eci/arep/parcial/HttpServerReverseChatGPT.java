@@ -1,9 +1,18 @@
 package edu.eci.arep.parcial;
 
 import java.net.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 public class HttpServerReverseChatGPT {
+
+    static Map<String, Method> commands = new HashMap<String, Method>();
+
     public static void main(String[] args) throws IOException {
         ServerSocket serverSocket = null;
         try {
@@ -42,13 +51,17 @@ public class HttpServerReverseChatGPT {
                     break;
                 }
             }
-
-            transformUri(uriString);
             
-            
+            String command = "";
 
-            outputLine = htmlPage();
-            // outputLine += outputLineResponse();
+            String response = "";
+            if(!uriString.equals("GET / HTTP/1.1")){
+                command = transformUri(uriString);
+                response = commandHandle(command);
+                outputLine = outputLineResponse(response);
+            } else {
+                outputLine = htmlPage();
+            }
 
             out.println(outputLine);
             out.close();
@@ -59,15 +72,44 @@ public class HttpServerReverseChatGPT {
         serverSocket.close();
     }
 
-    private static void transformUri(String uriString){
+    private static String commandHandle(String command){
+
+        String[] splitCommand = command.split("\\(\\[");
+
+        String method = splitCommand[0];
+        System.out.println(method);
+
+        String rawArgs = splitCommand[1].replace("([", "");
+        String[] args = rawArgs.replace("])", "").split(",");
+
+        switch(method){
+            case "Class":
+                return execClass(args);
+            case "invoke":
+                return "b";
+            case "unaryInvoke":
+                return "c";
+            case "binaryInvoke":
+                return "d";
+            default:
+                return "Comando desconocido";
+        }
+    }
+
+    private static String execClass(String[] args){
+        return args[0].getClass().toString();
+    }
+
+    private static String transformUri(String uriString){
         System.out.println(uriString);
+
         String command = "";
 
-        if(!uriString.equals("")){
+        if(!uriString.equals("") && !uriString.equals("GET / HTTP/1.1")){
             command = uriString.split("comando=")[1].split(" ")[0];
         }
                 
-        System.out.println(command);
+        return command;
     }
 
     private static String htmlPage() {
@@ -127,15 +169,18 @@ public class HttpServerReverseChatGPT {
         return response;
     }
 
-    private static String outputLineResponse() {
-        String outputLine = "<!DOCTYPE html>" +
+    private static String outputLineResponse(String response) {
+        String outputLine = "/ HTTP/1.1\n\r" +
+                "200 OK\n\r" +
+                "\n\r" +
+                "<!DOCTYPE html>" +
                 "<html>" +
                 "<head>" +
                 "<meta charset=\"UTF-8\">" +
-                "<title>Title of the document</title>\n" +
+                "<title>Resultado de la ejecución del comando:</title>\n" +
                 "</head>" +
                 "<body>" +
-                "<h1>Mi propio mensaje</h1>" +
+                "<h1>" + response + "</h1>" +
                 "</body>" +
                 "</html>";
 
