@@ -43,7 +43,7 @@ public class HttpServerReverseChatGPT {
                 System.out.println("Recibí: " + inputLine);
 
                 // GET
-                if(inputLine.startsWith("GET") && !inputLine.startsWith("GET /fav")){
+                if((inputLine.startsWith("GET") || inputLine.startsWith("POST")) && !inputLine.startsWith("GET /fav")){
                     uriString = inputLine;
                 }
 
@@ -87,9 +87,9 @@ public class HttpServerReverseChatGPT {
             case "Class":
                 return execClass(args);
             case "invoke":
-                return "b";
+                return execInvoke(args);
             case "unaryInvoke":
-                return "c";
+                return execUnaryInvoke(args);
             case "binaryInvoke":
                 return "d";
             default:
@@ -116,6 +116,32 @@ public class HttpServerReverseChatGPT {
         }
         return "Clase no encontrada";
     }
+
+    private static String execInvoke(String[] args){
+        try {
+            Method method = args[0].getClass().getMethod(args[1], null);
+            try {
+                return method.invoke(method, args[1]).toString();
+            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        } catch (NoSuchMethodException | SecurityException e) {
+            e.printStackTrace();
+        }
+        return "Clase o Metodo no encontrado";
+    }
+
+
+
+    private static String execUnaryInvoke(String[] args){
+        try {
+            Method method = args[0].getClass().getMethod(args[1], null);
+        } catch (NoSuchMethodException | SecurityException e) {
+            e.printStackTrace();
+        }
+        return "Implementacion faltante, no funciona";
+    }
+
 
     private static String transformUri(String uriString){
         System.out.println(uriString);
