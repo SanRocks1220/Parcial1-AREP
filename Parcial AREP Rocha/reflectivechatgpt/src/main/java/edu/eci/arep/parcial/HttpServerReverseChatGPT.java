@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.io.*;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -96,8 +97,24 @@ public class HttpServerReverseChatGPT {
         }
     }
 
-    private static String execClass(String[] args){
-        return args[0].getClass().toString();
+    private static String execClass(String[] args){ 
+        try {
+            String declared = "Campos declarados: \n";
+            Field[] fields = Class.forName(args[0]).getDeclaredFields();
+            for(Field field: fields){
+                declared += field.toString() + "\n";
+            }
+            declared += "\n";
+            declared += "\n\rMetodos declarados: \n";
+            Method[] methods = Class.forName(args[0]).getDeclaredMethods();
+            for(Method method: methods){
+                declared += method.toString() + "\n";
+            }
+            return declared;
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return "Clase no encontrada";
     }
 
     private static String transformUri(String uriString){
@@ -127,7 +144,7 @@ public class HttpServerReverseChatGPT {
                 "        <h1>Form with GET</h1>\n\r" +
                 "        <form action=\"/hello\">\n\r" +
                 "            <label for=\"name\">Name:</label><br>\n\r" +
-                "            <input type=\"text\" id=\"name\" name=\"name\" value=\"John\"><br><br>\n\r" +
+                "            <input type=\"text\" id=\"name\" name=\"name\" value=\"Class([java.lang.String])\"><br><br>\n\r" +
                 "            <input type=\"button\" value=\"Submit\" onclick=\"loadGetMsg()\">\n\r" +
                 "        </form> \n\r" +
                 "        <div id=\"getrespmsg\"></div>\n\r" +
@@ -148,7 +165,7 @@ public class HttpServerReverseChatGPT {
                 "        <h1>Form with POST</h1>\n\r" +
                 "        <form action=\"/hellopost\">\n\r" +
                 "            <label for=\"postname\">Name:</label><br>\n" +
-                "            <input type=\"text\" id=\"postname\" name=\"name\" value=\"John\"><br><br>\n\r" +
+                "            <input type=\"text\" id=\"postname\" name=\"name\" value=\"Class([java.lang.String])\"><br><br>\n\r" +
                 "            <input type=\"button\" value=\"Submit\" onclick=\"loadPostMsg(postname)\">\n\r" +
                 "        </form>\n\r" +
                 "        \n\r" +
@@ -180,7 +197,7 @@ public class HttpServerReverseChatGPT {
                 "<title>Resultado de la ejecución del comando:</title>\n" +
                 "</head>" +
                 "<body>" +
-                "<h1>" + response + "</h1>" +
+                "<pre>" + response + "</pre>" +
                 "</body>" +
                 "</html>";
 
