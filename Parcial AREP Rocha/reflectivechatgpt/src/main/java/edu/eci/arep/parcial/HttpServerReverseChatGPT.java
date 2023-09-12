@@ -51,7 +51,7 @@ public class HttpServerReverseChatGPT {
     }
 
     private static String htmlPage() {
-        String response = "GET / HTTP/1.1\n\r" +
+        String response = "/ HTTP/1.1\n\r" +
                 "200 OK\n\r" +
                 "\n\r" +
                 "<!DOCTYPE html>\n\r" +
