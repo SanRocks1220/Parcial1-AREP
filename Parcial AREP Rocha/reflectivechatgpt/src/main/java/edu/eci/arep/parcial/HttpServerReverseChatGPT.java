@@ -28,26 +28,46 @@ public class HttpServerReverseChatGPT {
             BufferedReader in = new BufferedReader(
                     new InputStreamReader(clientSocket.getInputStream()));
             String inputLine, outputLine;
+            String uriString = "";
             while ((inputLine = in.readLine()) != null) {
                 System.out.println("Recibí: " + inputLine);
+
+                // GET
+                if(inputLine.startsWith("GET") && !inputLine.startsWith("GET /fav")){
+                    uriString = inputLine;
+                }
+
+
                 if (!in.ready()) {
                     break;
                 }
             }
 
-            System.out.println("A");
+            transformUri(uriString);
+            
+            
+
             outputLine = htmlPage();
             // outputLine += outputLineResponse();
 
             out.println(outputLine);
             out.close();
             in.close();
-
-            System.out.println("B");
         }
 
         clientSocket.close();
         serverSocket.close();
+    }
+
+    private static void transformUri(String uriString){
+        System.out.println(uriString);
+        String command = "";
+
+        if(!uriString.equals("")){
+            command = uriString.split("comando=")[1].split(" ")[0];
+        }
+                
+        System.out.println(command);
     }
 
     private static String htmlPage() {
@@ -78,7 +98,7 @@ public class HttpServerReverseChatGPT {
                 "                    document.getElementById(\"getrespmsg\").innerHTML =\n\r" +
                 "                    this.responseText;\n\r" +
                 "                }\n\r" +
-                "                xhttp.open(\"GET\", \"/hello?name=\"+nameVar);\n\r" +
+                "                xhttp.open(\"GET\", \"/consulta?comando=\"+nameVar);\n\r" +
                 "                xhttp.send();\n\r" +
                 "            }\n\r" +
                 "        </script>\n\r" +
@@ -94,7 +114,7 @@ public class HttpServerReverseChatGPT {
                 "        \n\r" +
                 "        <script>\n\r" +
                 "            function loadPostMsg(name){\n\r" +
-                "                let url = \"/hellopost?name=\" + name.value;\n\r" +
+                "                let url = \"/consultaPost?comando=\" + name.value;\n\r" +
                 "\n\r" +
                 "                fetch (url, {method: 'POST'})\n\r" +
                 "                    .then(x => x.text())\n\r" +
